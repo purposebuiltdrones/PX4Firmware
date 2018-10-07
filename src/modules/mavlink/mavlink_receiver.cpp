@@ -326,6 +326,10 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 	case MAVLINK_MSG_ID_DEBUG_VECT:
 		handle_message_debug_vect(msg);
 		break;
+	
+	case MAVLINK_MSG_ID_CAMERA_CAPTURE_STATUS:
+		handle_message_camera_capture_status(msg);
+		break;
 
 	default:
 		break;
@@ -2490,6 +2494,15 @@ void MavlinkReceiver::handle_message_debug_vect(mavlink_message_t *msg)
 	} else {
 		orb_publish(ORB_ID(debug_vect), _debug_vect_pub, &debug_topic);
 	}
+}
+
+void MavlinkReceiver::handle_message_camera_capture_status(mavlink_message_t *msg)
+{
+	mavlink_camera_capture_status_t camera_capture_status;
+	mavlink_msg_camera_capture_status_decode(msg, &camera_capture_status);
+	char buf[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN];
+	sprintf(buf, "[Skycatch]  %f", (double) camera_capture_status.available_capacity);
+	_mavlink->send_statustext_info(buf);
 }
 
 /**
