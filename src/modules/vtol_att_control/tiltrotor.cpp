@@ -369,7 +369,7 @@ void Tiltrotor::fill_actuator_outputs()
 		}
 
 		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = desired_servo_angle[0];
-		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = desired_servo_angle[1]
+		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = desired_servo_angle[1];
 		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 
