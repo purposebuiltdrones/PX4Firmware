@@ -63,6 +63,7 @@ Tiltrotor::Tiltrotor(VtolAttitudeControl *attc) :
 	_params_handles_tiltrotor.front_trans_dur_p2 = param_find("VT_TRANS_P2_DUR");
 	_params_handles_tiltrotor.diff_thrust = param_find("VT_FW_DIFTHR_EN");
 	_params_handles_tiltrotor.diff_thrust_scale = param_find("VT_FW_DIFTHR_SC");
+	_params_handles_tiltrotor.max_servo_angle = param_find("VT_FW_SERVO_ANG");
 }
 
 Tiltrotor::~Tiltrotor() = default;
@@ -92,6 +93,9 @@ Tiltrotor::parameters_update()
 
 	param_get(_params_handles_tiltrotor.diff_thrust_scale, &v);
 	_params_tiltrotor.diff_thrust_scale = math::constrain(v, -1.0f, 1.0f);
+
+	param_get(_params_handles_tiltrotor.max_servo_angle, &v);
+	_params_tiltrotor.max_servo_angle = v;
 }
 
 void Tiltrotor::update_vtol_state()
@@ -346,11 +350,26 @@ void Tiltrotor::fill_actuator_outputs()
 	if (_vtol_schedule.flight_mode == FW_MODE) {
 		_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+		
+		float desired_servo_angle[2] = {0.0f, 0.0f};
+		float fw_pitch_force = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
+		float fw_roll_force = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
+		float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+		if ( fw_throttle > FLT_EPSILON ){
+			desired_servo_angle[0] = asinf( (fw_pitch_force - fw_roll_force) / fw_throttle);
+			desired_servo_angle[1] = asinf( (fw_pitch_force + fw_roll_force) / fw_throttle);
 
-		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] =
-			-_actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
-		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] =
-			(_actuators_fw_in->control[actuator_controls_s::INDEX_PITCH]);
+			for (int i=0; i<2; i++){
+				if (abs(desired_servo_angle[i]) > _params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F){
+					desired_servo_angle[i] = desired_servo_angle[i] / abs(desired_servo_angle[i]);
+				} else {
+					desired_servo_angle[i] = desired_servo_angle[i] / (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F);
+				}
+			}
+		}
+
+		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = desired_servo_angle[0];
+		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = desired_servo_angle[1]
 		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 

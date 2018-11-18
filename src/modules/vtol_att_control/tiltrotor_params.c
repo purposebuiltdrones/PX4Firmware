@@ -110,3 +110,16 @@ PARAM_DEFINE_INT32(VT_FW_DIFTHR_EN, 0);
  * @group VTOL Attitude Control
  */
 PARAM_DEFINE_FLOAT(VT_FW_DIFTHR_SC, 0.1f);
+
+/**
+ * Minimum/Maximum Servo Angles in FW
+ *
+ * This sets the maximum angle that can be command from the servos in FW mode
+ *
+ * @min 0.0
+ * @max 60.0
+ * @decimal 2
+ * @increment 0.1
+ * @group VTOL Attitude Control
+ */
+PARAM_DEFINE_FLOAT(VT_FW_SERVO_ANG, 15.0f);
