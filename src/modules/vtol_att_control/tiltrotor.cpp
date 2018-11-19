@@ -348,14 +348,24 @@ void Tiltrotor::fill_actuator_outputs()
 			_mc_yaw_weight;
 
 	if (_vtol_schedule.flight_mode == FW_MODE) {
-		_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
-			_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
-		
+		if (_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] < 0.1f){
+
+			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] = 0.1f;
+
+		} else {
+
+			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
+				_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+
+		}
+
 		float desired_servo_angle[2] = {0.0f, 0.0f};
 		float fw_pitch_force = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
 		float fw_roll_force = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
 		float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+		
 		if ( fw_throttle > FLT_EPSILON ){
+
 			desired_servo_angle[0] = asinf( (fw_pitch_force - fw_roll_force) / fw_throttle);
 			desired_servo_angle[1] = asinf( (fw_pitch_force + fw_roll_force) / fw_throttle);
 
