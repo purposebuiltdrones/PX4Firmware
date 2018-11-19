@@ -348,14 +348,16 @@ void Tiltrotor::fill_actuator_outputs()
 			_mc_yaw_weight;
 
 	if (_vtol_schedule.flight_mode == FW_MODE) {
-		if (_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] < 0.1f){
+		if (_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] < 0.2f){
 
-			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] = 0.1f;
+			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] = 0.2f;
+			_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] = 0.2f;
 
 		} else {
 
 			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
 				_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+			
 
 		}
 
@@ -365,12 +367,26 @@ void Tiltrotor::fill_actuator_outputs()
 		float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
 		
 		if ( fw_throttle > FLT_EPSILON ){
+			float servo_0_arg = (fw_pitch_force - fw_roll_force) / fw_throttle;
+			float servo_1_arg = (fw_pitch_force + fw_roll_force) / fw_throttle;
 
-			desired_servo_angle[0] = asinf( (fw_pitch_force - fw_roll_force) / fw_throttle);
-			desired_servo_angle[1] = asinf( (fw_pitch_force + fw_roll_force) / fw_throttle);
+			if (servo_0_arg > 1.0f){
+				servo_0_arg = 1.0f;
+			} else if (servo_0_arg < -1.0f){
+				servo_0_arg = -1.0f;
+			} 
+
+			if (servo_1_arg > 1.0f){
+				servo_1_arg = 1.0f;
+			} else if (servo_1_arg < -1.0f){
+				servo_1_arg = -1.0f;
+			} 
+
+			desired_servo_angle[0] = asinf( servo_0_arg );
+			desired_servo_angle[1] = asinf( servo_1_arg );
 
 			for (int i=0; i<2; i++){
-				if (abs(desired_servo_angle[i]) > _params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F){
+				if (abs(desired_servo_angle[i]) > (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F)){
 					desired_servo_angle[i] = desired_servo_angle[i] / abs(desired_servo_angle[i]);
 				} else {
 					desired_servo_angle[i] = desired_servo_angle[i] / (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F);
