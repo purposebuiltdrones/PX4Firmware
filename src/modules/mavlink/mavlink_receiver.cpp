@@ -1823,6 +1823,10 @@ MavlinkReceiver::handle_message_heartbeat(mavlink_message_t *msg)
 		mavlink_heartbeat_t hb;
 		mavlink_msg_heartbeat_decode(msg, &hb);
 
+		char buf[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN];
+		sprintf(buf, "Got a heartbeat from  %d : %d : %d", (int) msg->sysid, (int) msg->compid, (int) hb.type);
+		_mavlink->send_statustext_info(buf);
+
 		/* ignore own heartbeats, accept only heartbeats from GCS */
 		if (msg->sysid != mavlink_system.sysid && hb.type == MAV_TYPE_GCS) {
 
