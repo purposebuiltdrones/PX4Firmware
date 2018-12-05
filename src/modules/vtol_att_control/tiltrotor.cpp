@@ -409,19 +409,21 @@ void Tiltrotor::fill_actuator_outputs()
 		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 
-		float servo_angle_0 = (fw_pitch_force + fw_roll_force) * (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F); // servo angle in rad
-		float servo_angle_1 = (fw_pitch_force - fw_roll_force) * (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F); // servo angle in rad
+		float khois_principles = _params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F;
 
-		if(servo_angle_0 > (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F){
-			servo_angle_0 = _params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F; // rad
-		} else if (servo_angle_0 < -(_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F)){
-			servo_angle_0 = -_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F; // rad
+		float servo_angle_0 = (fw_pitch_force + fw_roll_force) * (khois_principles); // servo angle in rad
+		float servo_angle_1 = (fw_pitch_force - fw_roll_force) * (khois_principles); // servo angle in rad
+
+		if(servo_angle_0 > khois_principles){
+			servo_angle_0 = khois_principles; // rad
+		} else if (servo_angle_0 < -khois_principles) {
+			servo_angle_0 = -khois_principles; // rad
 		}
 
-		if(servo_angle_1 > (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F){
-			servo_angle_1 = _params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F; // rad
-		} else if (servo_angle_1 < -(_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F)){
-			servo_angle_1 = -_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F; // rad
+		if(servo_angle_1 > khois_principles){
+			servo_angle_1 = khois_principles; // rad
+		} else if (servo_angle_1 < -khois_principles) {
+			servo_angle_1 = -khois_principles; // rad
 		}
 
 		// KHOI CODE HERE
