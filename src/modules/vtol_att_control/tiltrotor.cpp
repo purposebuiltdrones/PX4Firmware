@@ -358,6 +358,59 @@ void Tiltrotor::fill_actuator_outputs()
 			_mc_yaw_weight;
 
 	if (_vtol_schedule.flight_mode == FW_MODE) {
+
+		// float desired_servo_angle[2] = {0.0f, 0.0f};
+		// float fw_pitch_force = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
+		// float fw_roll_force = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
+		// float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+		
+		// if ( fw_throttle > FLT_EPSILON ){
+		// 	float servo_0_arg = (fw_pitch_force - fw_roll_force) / fw_throttle;
+		// 	float servo_1_arg = (fw_pitch_force + fw_roll_force) / fw_throttle;
+
+		// 	if (servo_0_arg > 1.0f){
+		// 		servo_0_arg = 1.0f;
+		// 	} else if (servo_0_arg < -1.0f){
+		// 		servo_0_arg = -1.0f;
+		// 	} 
+
+		// 	if (servo_1_arg > 1.0f){
+		// 		servo_1_arg = 1.0f;
+		// 	} else if (servo_1_arg < -1.0f){
+		// 		servo_1_arg = -1.0f;
+		// 	} 
+
+		// 	desired_servo_angle[0] = asinf( servo_0_arg );
+		// 	desired_servo_angle[1] = asinf( servo_1_arg );
+
+		// 	for (int i=0; i<2; i++){
+		// 		if (abs(desired_servo_angle[i]) > (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F)){
+		// 			desired_servo_angle[i] = desired_servo_angle[i] / abs(desired_servo_angle[i]);
+		// 		} else {
+		// 			desired_servo_angle[i] = desired_servo_angle[i] / (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F);
+		// 		}
+		// 	}
+		// }
+
+		// _actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = desired_servo_angle[0];
+		// _actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = desired_servo_angle[1];
+
+
+		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] =
+			-_actuators_fw_in->control[actuator_controls_s::INDEX_ROLL]; // roll
+
+		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] =
+			(_actuators_fw_in->control[actuator_controls_s::INDEX_PITCH]); // pitch
+
+		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
+			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
+
+
+			
+
+		float k_out_to_rad = (_params_tiltrotor.tilt_fw-_params_tiltrotor.tilt_mc)/(pi()/2);
+		float servo_angle = _params_tiltrotor.tilt_fw / k_out_to_rad  -  (SERVO_OUTPUT) / k_out_to_rad;
+
 		if (_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] < 0.2f){
 
 			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] = 0.2f;
@@ -366,48 +419,11 @@ void Tiltrotor::fill_actuator_outputs()
 		} else {
 
 			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
-				_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+				_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] / cosf(servo_angle); // thrust
 			
-
 		}
 
-		float desired_servo_angle[2] = {0.0f, 0.0f};
-		float fw_pitch_force = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
-		float fw_roll_force = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
-		float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
-		
-		if ( fw_throttle > FLT_EPSILON ){
-			float servo_0_arg = (fw_pitch_force - fw_roll_force) / fw_throttle;
-			float servo_1_arg = (fw_pitch_force + fw_roll_force) / fw_throttle;
 
-			if (servo_0_arg > 1.0f){
-				servo_0_arg = 1.0f;
-			} else if (servo_0_arg < -1.0f){
-				servo_0_arg = -1.0f;
-			} 
-
-			if (servo_1_arg > 1.0f){
-				servo_1_arg = 1.0f;
-			} else if (servo_1_arg < -1.0f){
-				servo_1_arg = -1.0f;
-			} 
-
-			desired_servo_angle[0] = asinf( servo_0_arg );
-			desired_servo_angle[1] = asinf( servo_1_arg );
-
-			for (int i=0; i<2; i++){
-				if (abs(desired_servo_angle[i]) > (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F)){
-					desired_servo_angle[i] = desired_servo_angle[i] / abs(desired_servo_angle[i]);
-				} else {
-					desired_servo_angle[i] = desired_servo_angle[i] / (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F);
-				}
-			}
-		}
-
-		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = desired_servo_angle[0];
-		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = desired_servo_angle[1];
-		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
-			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 
 		/* allow differential thrust if enabled */
 		if (_params_tiltrotor.diff_thrust == 1) {
