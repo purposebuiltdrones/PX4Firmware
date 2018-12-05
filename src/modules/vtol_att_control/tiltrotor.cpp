@@ -395,6 +395,10 @@ void Tiltrotor::fill_actuator_outputs()
 		// _actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = desired_servo_angle[0];
 		// _actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = desired_servo_angle[1];
 
+		float fw_pitch_force = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
+		float fw_roll_force = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
+		float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+
 
 		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] =
 			-_actuators_fw_in->control[actuator_controls_s::INDEX_ROLL]; // roll
@@ -405,12 +409,26 @@ void Tiltrotor::fill_actuator_outputs()
 		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 
+		float servo_0_out = (fw_pitch_force + fw_roll_force) * (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F) * 0.5f + 0.5f; // scalled to 0 to 1
+		float servo_1_out = (fw_pitch_force - fw_roll_force) * (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F) * 0.5f + 0.5f; // scalled to 0 to 1
 
-			
+		if (servo_0_out > 1.0f){
+			servo_0_out = 1.0f;
+		} else if (servo_0_out < -1.0f){
+			servo_0_out = -1.0f;
+		}
 
-		float k_out_to_rad = (_params_tiltrotor.tilt_fw-_params_tiltrotor.tilt_mc)/(pi()/2);
-		float servo_angle = _params_tiltrotor.tilt_fw / k_out_to_rad  -  (SERVO_OUTPUT) / k_out_to_rad;
+		if (servo_1_out > 1.0f){
+			servo_1_out = 1.0f;
+		} else if (servo_1_out < -1.0f){
+			servo_1_out = -1.0f;
+		}
 
+		float k_out_to_rad = (_params_tiltrotor.tilt_fw-_params_tiltrotor.tilt_mc)/(pi()/2); // relationship between servo output of 0 to 1 and radians
+		float servo_angle_0 = _params_tiltrotor.tilt_fw / k_out_to_rad  -  (servo_0_out) / k_out_to_rad;
+		float servo_angle_1 = _params_tiltrotor.tilt_fw / k_out_to_rad  -  (servo_1_out) / k_out_to_rad;
+
+		float servo_angle_1 = 
 		if (_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] < 0.2f){
 
 			_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] = 0.2f;
