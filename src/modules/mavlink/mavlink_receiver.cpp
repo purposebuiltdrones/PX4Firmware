@@ -2501,7 +2501,7 @@ void MavlinkReceiver::handle_message_camera_capture_status(mavlink_message_t *ms
 	mavlink_camera_capture_status_t camera_capture_status;
 	mavlink_msg_camera_capture_status_decode(msg, &camera_capture_status);
 	char buf[MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN];
-	sprintf(buf, "[Skycatch]  %f", (double) camera_capture_status.available_capacity);
+	sprintf(buf, "[Skycatch] Space Remaining: %f, Pictures Taken: %d", (double) camera_capture_status.available_capacity, (uint32_t) camera_capture_status.recording_time_ms);
 	_mavlink->send_statustext_info(buf);
 }
 
