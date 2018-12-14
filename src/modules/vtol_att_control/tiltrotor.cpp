@@ -351,7 +351,6 @@ void Tiltrotor::fill_actuator_outputs()
 		float desired_servo_angle[2] = {0.0f, 0.0f};
 		float fw_pitch_force = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
 		float fw_roll_force = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
-		float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
 		float max_servo_angle_rad = _params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F;
 
 		float servo_angle_0 = (fw_pitch_force + fw_roll_force) * (max_servo_angle_rad); // servo angle in rad
@@ -389,6 +388,7 @@ void Tiltrotor::fill_actuator_outputs()
 
 		float mc_pitch_output = 0.5f * throttle_0 + 0.5f * throttle_1;
 		float mc_yaw_output = -0.5f * throttle_0 + 0.5f * throttle_1;
+		float fw_throttle = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
 
 		_actuators_out_0->control[actuator_controls_s::INDEX_PITCH] = mc_pitch_output;
 		_actuators_out_0->control[actuator_controls_s::INDEX_YAW] = mc_yaw_output;
