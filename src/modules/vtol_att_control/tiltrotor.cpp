@@ -390,10 +390,10 @@ void Tiltrotor::fill_actuator_outputs()
 		}
 
 		float throttle_0 = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] / cosf(servo_angle_0);
-		throttle_0 -= (_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * _params_tiltrotor.diff_thrust_scale) - _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+		throttle_0 -= (_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * _params_tiltrotor.diff_thrust_scale) + _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
 
 		float throttle_1 = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] / cosf(servo_angle_1);
-		throttle_1 -= -(_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * _params_tiltrotor.diff_thrust_scale) - _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+		throttle_1 -= -(_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * _params_tiltrotor.diff_thrust_scale) + _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
 
 		float mc_pitch_output = 0.5f * throttle_0 + 0.5f * throttle_1;
 		float mc_yaw_output = -0.5f * throttle_0 + 0.5f * throttle_1;
