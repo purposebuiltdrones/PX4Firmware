@@ -391,8 +391,35 @@ void Tiltrotor::fill_actuator_outputs()
 		_actuators_out_0->control[actuator_controls_s::INDEX_PITCH] = mc_pitch_output;
 		_actuators_out_0->control[actuator_controls_s::INDEX_YAW] = mc_yaw_output;
 
-		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
-		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
+		float servo_0_arg = (fw_pitch_force - fw_roll_force) / throttle_0;
+		float servo_1_arg = (fw_pitch_force + fw_roll_force) / throttle_1;
+
+		if (servo_0_arg > 1.0f){
+			servo_0_arg = 1.0f;
+		} else if (servo_0_arg < -1.0f){
+			servo_0_arg = -1.0f;
+		} 
+
+		if (servo_1_arg > 1.0f){
+			servo_1_arg = 1.0f;
+		} else if (servo_1_arg < -1.0f){
+			servo_1_arg = -1.0f;
+		} 
+
+		desired_servo_angle[0] = asinf( servo_0_arg );
+		desired_servo_angle[1] = asinf( servo_1_arg );
+
+		for (int i=0; i<2; i++){
+			if (abs(desired_servo_angle[i]) > (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F)){
+				desired_servo_angle[i] = desired_servo_angle[i] / abs(desired_servo_angle[i]);
+			} else {
+				desired_servo_angle[i] = desired_servo_angle[i] / (_params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F);
+			}
+		}
+
+
+		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = desired_servo_angle[0];
+		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = desired_servo_angle[1];
 		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 
