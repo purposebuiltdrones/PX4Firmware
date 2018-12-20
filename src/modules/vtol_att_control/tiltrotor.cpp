@@ -362,7 +362,7 @@ void Tiltrotor::fill_actuator_outputs()
 		float fw_pitch_force = _actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
 		float fw_roll_force = _actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
 		float max_servo_angle_rad = _params_tiltrotor.max_servo_angle * M_DEG_TO_RAD_F;
-		float pitch_scale = 0.7f;
+		float pitch_scale = 1.0f;
 
 		float servo_angle_0 = (fw_pitch_force * pitch_scale + fw_roll_force) * (max_servo_angle_rad); // servo angle in rad
 		float servo_angle_1 = (fw_pitch_force * pitch_scale - fw_roll_force) * (max_servo_angle_rad); // servo angle in rad
@@ -391,11 +391,11 @@ void Tiltrotor::fill_actuator_outputs()
 			
 		}
 
-		float throttle_1 = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] / cosf(servo_angle_0);
-		throttle_1 -= -(_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * _params_tiltrotor.diff_thrust_scale) + _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
-
-		float throttle_0 = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] / cosf(servo_angle_1);
+		float throttle_0 = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] / cosf(servo_angle_0);
 		throttle_0 -= (_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * _params_tiltrotor.diff_thrust_scale) + _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
+
+		float throttle_1 = _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] / cosf(servo_angle_1);
+		throttle_1 -= -(_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * _params_tiltrotor.diff_thrust_scale) + _actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];
 
 		float mc_pitch_output = 0.5f * throttle_0 + 0.5f * throttle_1;
 		float mc_yaw_output = -0.5f * throttle_0 + 0.5f * throttle_1;
