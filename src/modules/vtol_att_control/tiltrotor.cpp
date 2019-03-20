@@ -434,6 +434,10 @@ void Tiltrotor::fill_actuator_outputs()
 	} else {
 		_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
 			_actuators_mc_in->control[actuator_controls_s::INDEX_THROTTLE];
+
+		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = 0;
+		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = 0;
+		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] = 0;
 	}
 
 	_actuators_out_1->timestamp = hrt_absolute_time();
