@@ -259,6 +259,7 @@ void Tiltrotor::update_transition_state()
 			_mc_roll_weight = 1.0f - (time_since_trans_start - _params->front_trans_time_min) /
 					  (_params->front_trans_time_openloop - _params->front_trans_time_min);
 			_mc_yaw_weight = _mc_roll_weight;
+			_mc_pitch_weight = _mc_roll_weight;
 		}
 
 		_thrust_transition = -_mc_virtual_att_sp->thrust_body[2];
@@ -270,6 +271,7 @@ void Tiltrotor::update_transition_state()
 				_params_tiltrotor.front_trans_dur_p2;
 
 		_mc_roll_weight = 0.0f;
+		_mc_pitch_weight = 0.0f;
 		_mc_yaw_weight = 0.0f;
 
 		// ramp down rear motors (setting MAX_PWM down scales the given output into the new range)
@@ -316,6 +318,7 @@ void Tiltrotor::update_transition_state()
 	}
 
 	_mc_roll_weight = math::constrain(_mc_roll_weight, 0.0f, 1.0f);
+	_mc_pitch_weight = math::constrain(_mc_pitch_weight, 0.0f, 1.0f);
 	_mc_yaw_weight = math::constrain(_mc_yaw_weight, 0.0f, 1.0f);
 	_mc_throttle_weight = math::constrain(_mc_throttle_weight, 0.0f, 1.0f);
 
@@ -357,7 +360,8 @@ void Tiltrotor::fill_actuator_outputs()
 
 	} else {
 		_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
-			_actuators_mc_in->control[actuator_controls_s::INDEX_THROTTLE] * _mc_throttle_weight;
+			_actuators_mc_in->control[actuator_controls_s::INDEX_THROTTLE] * _mc_throttle_weight + 
+			_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE] * (1 - _mc_throttle_weight);
 	}
 
 	// Fixed wing output
@@ -366,17 +370,10 @@ void Tiltrotor::fill_actuator_outputs()
 
 	_actuators_out_1->control[4] = _tilt_control;
 
-	if (_params->elevons_mc_lock && _vtol_schedule.flight_mode == MC_MODE) {
-		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] = 0.0f;
-		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = 0.0f;
-		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] = 0.0f;
-
-	} else {
-		_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] =
-			_actuators_fw_in->control[actuator_controls_s::INDEX_ROLL];
-		_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] =
-			_actuators_fw_in->control[actuator_controls_s::INDEX_PITCH];
-		_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
-			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];
-	}
+	_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] =
+		_actuators_fw_in->control[actuator_controls_s::INDEX_ROLL] * (1 - _mc_roll_weight);
+	_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] =
+		_actuators_fw_in->control[actuator_controls_s::INDEX_PITCH] * (1 - _mc_pitch_weight);
+	_actuators_out_1->control[actuator_controls_s::INDEX_YAW] =
+		_actuators_fw_in->control[actuator_controls_s::INDEX_YAW] * (1 - _mc_yaw_weight);
 }
