@@ -127,6 +127,7 @@ px4_add_romfs_files(
 	13010_claire
 	13012_convergence
 	13013_deltaquad
+	13014_kite
 
 	# [14000, 14999] Tri Y
 	14001_tri_y_yaw+
